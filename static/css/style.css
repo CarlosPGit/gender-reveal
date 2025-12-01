@@ -1,0 +1,244 @@
+:root {
+    --boy-color: #3b82f6;
+    --boy-dark: #1e3a8a;
+    --girl-color: #ec4899;
+    --girl-dark: #831843;
+    --text-color: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    background: #000;
+}
+
+.battle-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.side {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 50%;
+    position: relative;
+    z-index: 10;
+}
+
+/* Background Layers */
+.background-layer-boy {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 50%;
+    background: radial-gradient(circle at 20% 50%, #ffffff 0%, #C0E6F7 40%, #8bcae6 100%);
+    z-index: 1;
+}
+
+.background-layer-girl {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 50%;
+    background: radial-gradient(circle at 80% 50%, #ffffff 0%, #E1C2F4 40%, #c499de 100%);
+    z-index: 1;
+}
+
+.content {
+    z-index: 20;
+    text-align: center;
+    color: var(--text-color);
+}
+
+h1 {
+    font-size: 4.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+p {
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 2rem;
+    /* Pastel Gradient Text */
+    background: #fcfdfd;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+button {
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    background: white;
+    color: #000;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-transform: uppercase;
+    font-family: 'Outfit', sans-serif;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+/* Boy Button Gradient */
+.boy button {
+    background: #fcfdfd;
+    color: #0c4a6e;
+}
+
+/* Girl Button Gradient */
+.girl button {
+    background: #fcfdfd;
+    color: #831843;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+.vs-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    color: black;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 900;
+    font-size: 1.5rem;
+    z-index: 20;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    border: 4px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Avatar Styles */
+.avatar {
+    position: absolute;
+    bottom: 10%;
+    height: 220px;
+    z-index: 15;
+    pointer-events: none;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+    transform-origin: bottom center;
+}
+
+#boy-avatar {
+    right: -100px;
+}
+
+#girl-avatar {
+    left: -90px;
+    height: 210px;
+}
+
+/* Hover effect for avatars just for fun */
+.side:hover #boy-avatar {
+    transform: scale(1.05) rotate(-2deg);
+}
+
+.side:hover #girl-avatar {
+    transform: scale(1.05) rotate(2deg);
+}
+
+/* Confetti Z-Index Fix */
+canvas {
+    z-index: 9999 !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .battle-container {
+        flex-direction: row;
+        /* Force Horizontal Split */
+    }
+
+    .side {
+        width: 50%;
+        height: 100%;
+    }
+
+    /* Adjust background layers for horizontal split */
+    .background-layer-boy {
+        width: 50%;
+        height: 100%;
+        top: 0;
+        left: 0;
+    }
+
+    .background-layer-girl {
+        width: 50%;
+        height: 100%;
+        top: 0;
+        right: 0;
+    }
+
+    /* Avatars - Aggressive Scaling */
+    .avatar {
+        height: 150px;
+        /* Much smaller */
+        bottom: 15%;
+        z-index: 5;
+        opacity: 0.8;
+    }
+
+    #boy-avatar {
+        right: -60px;
+    }
+
+    #girl-avatar {
+        left: -55px;
+        height: 140px;
+    }
+
+    /* Typography & Buttons - Aggressive Scaling */
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    p {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    button {
+        padding: 0.8rem 1.5rem;
+        position: relative;
+    }
+
+    .vs-badge {
+        width: 40px;
+        height: 40px;
+        font-size: 0.8rem;
+        border-width: 2px;
+    }
+}
