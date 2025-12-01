@@ -1,6 +1,41 @@
 let currentTeam = null;
 
+// Access Modal Logic
+let isAccessGranted = false;
+const ACCESS_KEY = "BEBE2025";
+
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('access-modal');
+    const accessInput = document.getElementById('access-key-input');
+    const accessBtn = document.getElementById('access-btn');
+    const errorMessage = document.getElementById('error-message');
+
+    function checkAccess() {
+        const enteredKey = accessInput.value.trim();
+        if (enteredKey === ACCESS_KEY) {
+            isAccessGranted = true;
+            modal.classList.add('hidden');
+            // Optional: Add blur removal or other reveal animations here
+        } else {
+            errorMessage.classList.remove('hidden');
+            // Shake animation for error
+            gsap.fromTo(accessInput, { x: -10 }, { x: 10, duration: 0.1, repeat: 5, yoyo: true });
+        }
+    }
+
+    accessBtn.addEventListener('click', checkAccess);
+
+    accessInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            checkAccess();
+        }
+    });
+});
+
+// Modified vote function to check for access
 function vote(team) {
+    if (!isAccessGranted) return;
+
     fetch('/api/vote', {
         method: 'POST',
         headers: {
