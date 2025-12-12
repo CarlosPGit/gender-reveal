@@ -23,7 +23,7 @@
             <div class="content">
                 <h1>Team Niño</h1>
                 <p id="boy-percent">50%</p>
-                <button onclick="vote('boy')">Niño</button>
+                <button id="vote-boy">Niño</button>
             </div>
         </div>
 
@@ -31,24 +31,29 @@
             <div class="content">
                 <h1>Team Niña</h1>
                 <p id="girl-percent">50%</p>
-                <button onclick="vote('girl')">Niña</button>
+                <button id="vote-girl">Niña</button>
             </div>
         </div>
 
         <div class="vs-badge">VS</div>
     </div>
 
+    <!-- Admin Controls -->
+    <div id="admin-controls" class="admin-controls hidden">
+        <button id="admin-reveal-btn" class="reveal-btn">REVELAR SEXO</button>
+    </div>
+
     <!-- Access Modal -->
     <div id="access-modal" class="modal-overlay">
         <div class="modal-card">
             <h2>¡Bienvenido a la Batalla!</h2>
-            <p>¡Hola! Estás a punto de ser parte de una decisión importante. ¿Será Team Boy 💙 o Team Girl 🩷? Ingresa
+            <p>¡Hola! Estás a punto de ser parte de una decisión importante. ¿Serás Team Niño💙 o Team Niña💜? Ingresa
                 tu clave de invitado para desbloquear la votación y déjanos tu predicción.</p>
             <div class="input-group">
                 <input type="text" id="access-key-input" placeholder="Clave de acceso">
                 <button id="access-btn">Ingresar</button>
             </div>
-            <p id="error-message" class="error-message hidden">Clave incorrecta, intenta de nuevo</p>
+            <p id="error-msg" class="error-message hidden">Clave incorrecta, intenta de nuevo</p>
         </div>
     </div>
 

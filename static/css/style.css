@@ -364,3 +364,114 @@ canvas {
         width: 100%;
     }
 }
+
+/* Countdown & Dominance Styles */
+.countdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+}
+
+.countdown-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.countdown-number {
+    font-size: 15rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 50px rgba(255, 255, 255, 0.5);
+    font-family: 'Outfit', sans-serif;
+}
+
+.winner-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 8rem;
+    font-weight: 900;
+    color: white;
+    text-transform: uppercase;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 3000;
+    opacity: 0;
+    pointer-events: none;
+    width: 100%;
+    text-align: center;
+}
+
+.winner-text.show {
+    opacity: 1;
+    animation: popIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Admin Controls */
+.admin-controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1001;
+}
+
+.admin-controls.hidden {
+    display: none;
+}
+
+.reveal-btn {
+    background: #10b981;
+    color: white;
+    font-size: 1.5rem;
+    padding: 1rem 3rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 900;
+    font-family: 'Outfit', sans-serif;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+    animation: pulse 2s infinite;
+    transition: transform 0.2s;
+}
+
+.reveal-btn:hover {
+    background: #059669;
+    transform: scale(1.1);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
