@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gender Reveal Battle</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3">
+    <link rel="stylesheet" href="/reveal-gender-battle/static/css/style.css?v=3">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 
@@ -13,10 +13,10 @@
 
     <div class="battle-container">
         <div class="background-layer-boy">
-            <img src="/static/img/boy_warrior.png" id="boy-avatar" class="avatar">
+            <img src="/reveal-gender-battle/static/img/boy_warrior.png" id="boy-avatar" class="avatar">
         </div>
         <div class="background-layer-girl">
-            <img src="/static/img/girl_warrior.png" id="girl-avatar" class="avatar">
+            <img src="/reveal-gender-battle/static/img/girl_warrior.png" id="girl-avatar" class="avatar">
         </div>
 
         <div id="boy-side" class="side boy">
@@ -59,7 +59,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="/reveal-gender-battle/static/js/main.js"></script>
 </body>
 
 </html>

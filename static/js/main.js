@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function validateAccessKey(key) {
-        fetch('/api/validate_access', {
+        fetch('/reveal-gender-battle/api/validate_access', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ access_key: key })
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (revealBtn) {
         revealBtn.addEventListener('click', () => {
             const key = sessionStorage.getItem('accessKey');
-            fetch('/api/reveal', {
+            fetch('/reveal-gender-battle/api/reveal', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ access_key: key })
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         const key = sessionStorage.getItem('accessKey');
-        fetch('/api/vote', {
+        fetch('/reveal-gender-battle/api/vote', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ team: team, access_key: key })
@@ -145,7 +145,7 @@ function updateStats() {
     if (!isAccessGranted) {
         return;
     }
-    fetch('/api/stats')
+    fetch('/reveal-gender-battle/api/stats')
         .then(response => response.json())
         .then(data => {
             if (data.status === 'ENDED') {
@@ -239,7 +239,7 @@ function startCountdown(winner) {
     }
 
     const numberEl = overlay.querySelector('.countdown-number');
-    let count = 10;
+    let count = 5;
 
     const interval = setInterval(() => {
         count--;
@@ -283,37 +283,76 @@ function showDominance(winner, immediate = false) {
         gsap.to(girlLayer, { width: "0%", duration: immediate ? 0 : 2, ease: "power4.inOut" });
 
         gsap.to(boyAvatar, {
-            left: "50%",
+            left: "150%",
+            right: "auto",
             x: "-50%",
             scale: 1.5,
             bottom: "20%",
-            duration: immediate ? 0 : 2,
-            ease: "elastic.out(1, 0.5)"
+            duration: immediate ? 0 : 4,
+            ease: "power4.inOut"
         });
         gsap.to(girlAvatar, { opacity: 0, duration: 0.5 });
 
-        showWinnerText("IT'S A BOY!");
-        triggerConfetti('boy');
-        setInterval(() => triggerConfetti('boy'), 2000); // Continuous confetti
+        showWinnerText("¡ES UN NIÑO!");
+        triggerConfetti('boy', true);
+        setInterval(() => triggerConfetti('boy', true), 50); // Continuous rain
+
+        // Show final reveal image after 3 seconds
+        setTimeout(() => showFinalImage('matias.png'), 3000);
 
     } else if (winner === 'girl') {
         gsap.to(girlLayer, { width: "100%", duration: immediate ? 0 : 2, ease: "power4.inOut" });
         gsap.to(boyLayer, { width: "0%", duration: immediate ? 0 : 2, ease: "power4.inOut" });
 
         gsap.to(girlAvatar, {
-            right: "50%",
-            x: "50%",
+            left: "-100%",
+            right: "auto",
+            x: "-50%",
             scale: 1.5,
             bottom: "20%",
-            duration: immediate ? 0 : 2,
-            ease: "elastic.out(1, 0.5)"
+            duration: immediate ? 0 : 4,
+            ease: "power4.inOut"
         });
         gsap.to(boyAvatar, { opacity: 0, duration: 0.5 });
 
-        showWinnerText("IT'S A GIRL!");
-        triggerConfetti('girl');
-        setInterval(() => triggerConfetti('girl'), 2000); // Continuous confetti
+        showWinnerText("¡ES UNA NIÑA!");
+        triggerConfetti('girl', true);
+        setInterval(() => triggerConfetti('girl', true), 50); // Continuous rain
+
+        // Show final reveal image after 3 seconds
+        setTimeout(() => showFinalImage('isabella.png'), 3000);
     }
+}
+
+function showFinalImage(imageName) {
+    let imgEl = document.querySelector('.final-reveal-image');
+    if (!imgEl) {
+        imgEl = document.createElement('img');
+        imgEl.className = 'final-reveal-image';
+        document.body.appendChild(imgEl);
+    }
+
+    // Always update class and src to ensure correct positioning styles (boy vs girl)
+    const winnerClass = imageName.includes('matias') ? 'reveal-boy' : 'reveal-girl';
+    imgEl.className = `final-reveal-image ${winnerClass}`;
+    imgEl.src = `/reveal-gender-battle/static/img/${imageName}`;
+
+    // Trigger animation after a brief delay to ensure CSS transition works
+    setTimeout(() => {
+        imgEl.classList.add('show');
+    }, 100);
+
+    // Change text after image finishes sliding up (2s transition + 0.5s buffer)
+    setTimeout(() => {
+        const winnerText = document.querySelector('.winner-text');
+        if (winnerText) {
+            if (imageName === 'matias.png') {
+                winnerText.innerText = '¡Hola! soy Mathias';
+            } else if (imageName === 'isabella.png') {
+                winnerText.innerText = '¡Hola! soy Isabella';
+            }
+        }
+    }, 2500);
 }
 
 function showWinnerText(text) {
@@ -327,18 +366,38 @@ function showWinnerText(text) {
     winnerEl.classList.add('show');
 }
 
-function triggerConfetti(team) {
+function triggerConfetti(team, fromTop = false) {
     const colors = team === 'boy' ? ['#3b82f6', '#ffffff', '#60a5fa'] : ['#ec4899', '#ffffff', '#d946ef'];
-    const originX = team === 'boy' ? 0 : 1;
-    const angle = team === 'boy' ? 60 : 120;
+    const isMobile = window.innerWidth <= 768;
+
+    let origin, angle, startVelocity, spread, gravity, particleCount, scalar;
+
+    if (fromTop) {
+        origin = { x: Math.random(), y: isMobile ? 0 : -0.1 }; // Mobile: start from top edge
+        angle = 270; // Downwards
+        startVelocity = isMobile ? 10 : 30; // Mobile needs more velocity
+        spread = isMobile ? 30 : 50;
+        gravity = isMobile ? 0.7 : 0.5; // Mobile: slightly more gravity
+        particleCount = isMobile ? 25 : 50;
+        scalar = isMobile ? 0.8 : 1.2;
+    } else {
+        // Standard side cannon
+        origin = { x: team === 'boy' ? 0 : 1, y: 0.7 };
+        angle = team === 'boy' ? 60 : 120;
+        startVelocity = 45;
+        spread = isMobile ? 60 : 100;
+        gravity = 1.2;
+        particleCount = isMobile ? 80 : 150;
+        scalar = isMobile ? 0.9 : 1.2;
+    }
 
     confetti({
-        particleCount: 150,
-        spread: 100,
-        startVelocity: 45,
-        scalar: 1.2,
-        gravity: 1.2,
-        origin: { x: originX, y: 0.7 },
+        particleCount: particleCount,
+        spread: spread,
+        startVelocity: startVelocity,
+        scalar: scalar,
+        gravity: gravity,
+        origin: origin,
         colors: colors,
         angle: angle,
         zIndex: 9999

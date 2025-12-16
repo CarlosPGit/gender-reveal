@@ -5,6 +5,22 @@ from sqlalchemy import text
 
 app = Flask(__name__)
 
+class PrefixMiddleware(object):
+    def __init__(self, app, prefix=''):
+        self.app = app
+        self.prefix = prefix
+
+    def __call__(self, environ, start_response):
+        if environ['PATH_INFO'].startswith(self.prefix):
+            environ['PATH_INFO'] = environ['PATH_INFO'][len(self.prefix):]
+            environ['SCRIPT_NAME'] = self.prefix
+            return self.app(environ, start_response)
+        else:
+            start_response('404', [('Content-Type', 'text/plain')])
+            return ["Esta URL no pertenece a la aplicacion.".encode()]
+
+app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/reveal-gender-battle')
+
 # Database Configuration
 db_user = os.environ.get('DB_USER', 'root')
 db_password = os.environ.get('DB_PASSWORD', 'root')
@@ -17,7 +33,45 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import binascii
+
+# Simple XOR Encryption for Doctor Votes
+ENCRYPTION_KEY = "SECRET" # Simple key
+
+def encrypt_vote(text):
+    """Encrypts plain text using XOR and hex encoding."""
+    encrypted = []
+    for i in range(len(text)):
+        key_c = ENCRYPTION_KEY[i % len(ENCRYPTION_KEY)]
+        encrypted_c = chr(ord(text[i]) ^ ord(key_c))
+        encrypted.append(encrypted_c)
+    return binascii.hexlify("".join(encrypted).encode()).decode()
+
+def decrypt_vote(hex_text):
+    """Decrypts hex encoded text using XOR."""
+    try:
+        # Check if it looks like hex and is encrypted
+        # If decryption fails or result is not boy/girl, assume it was plain text (legacy compatibility)
+        encrypted_bytes = binascii.unhexlify(hex_text)
+        encrypted_str = encrypted_bytes.decode()
+        
+        decrypted = []
+        for i in range(len(encrypted_str)):
+            key_c = ENCRYPTION_KEY[i % len(ENCRYPTION_KEY)]
+            decrypted_c = chr(ord(encrypted_str[i]) ^ ord(key_c))
+            decrypted.append(decrypted_c)
+        
+        result = "".join(decrypted)
+        
+        # Validation for legacy mixed data: if not valid enum, maybe it was plain text
+        if result not in ['boy', 'girl']:
+            return hex_text # Return original if garbage (or handle as error)
+            
+        return result
+    except Exception:
+        return hex_text # Fallback for plain text votes
+
 
 # Models
 class Vote(db.Model):
@@ -25,7 +79,7 @@ class Vote(db.Model):
     team = db.Column(db.String(10), nullable=False) # 'boy' or 'girl'
     access_key_id = db.Column(db.Integer, db.ForeignKey('access_key.id'), nullable=True)
     is_revealed = db.Column(db.Boolean, default=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 class AccessKey(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -146,7 +200,10 @@ def vote():
         return jsonify({'error': 'Ya has votado'}), 403
     
     # Record Vote
-    new_vote = Vote(team=team, access_key_id=key_obj.id, timestamp=datetime.utcnow())
+    new_vote = Vote(team=team, access_key_id=key_obj.id, timestamp=datetime.now(timezone.utc).replace(tzinfo=None))
+    if key_obj.is_doctor:
+        new_vote.team = encrypt_vote(team)
+    
     db.session.add(new_vote)
     
     # Mark key as used if not admin
@@ -179,10 +236,10 @@ def reveal_vote():
         
     # Trigger Reveal
     doctor_vote.is_revealed = True
-    doctor_vote.timestamp = datetime.utcnow() # Reset timestamp to start countdown now
+    # doctor_vote.timestamp = datetime.now(timezone.utc).replace(tzinfo=None) # Timestamp not reset, preserving original vote time
     db.session.commit()
     
-    return jsonify({'message': 'Reveal triggered!', 'status': 'COUNTDOWN', 'final_result': doctor_vote.team})
+    return jsonify({'message': 'Reveal triggered!', 'status': 'ENDED', 'final_result': decrypt_vote(doctor_vote.team)})
 
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
@@ -193,13 +250,9 @@ def get_stats():
     final_result = None
     
     if doctor_vote and doctor_vote.is_revealed:
-        final_result = doctor_vote.team
-        # Calculate time since reveal
-        time_since_reveal = datetime.utcnow() - doctor_vote.timestamp
-        if time_since_reveal.total_seconds() < 10:
-            status = 'COUNTDOWN'
-        else:
-            status = 'ENDED'
+        final_result = decrypt_vote(doctor_vote.team)
+        print(final_result)
+        status = 'ENDED'
     
     # Calculate counts excluding doctor votes
     # We can do this by joining AccessKey and filtering where is_doctor is False (or NULL if we had public votes without keys, but here all votes have keys)
